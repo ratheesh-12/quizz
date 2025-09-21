@@ -1,0 +1,35 @@
+{
+  "name": "gym-backend-v1",
+  "version": "1.0.0",
+  "description": "Backend for Gym Management System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "create-db": "node Database-F/create-db.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vimal-P-3692/Gym-Backend-v1.git"
+  },
+  "keywords": [
+    "gym",
+    "backend",
+    "express",
+    "postgresql"
+  ],
+  "author": "Vimal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vimal-P-3692/Gym-Backend-v1/issues"
+  },
+  "homepage": "https://github.com/Vimal-P-3692/Gym-Backend-v1#readme",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  }
+}

@@ -1,0 +1,73 @@
+-- 1. Admins table (quiz creators)
+CREATE TABLE admins (
+    admin_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL, -- store hashed password, not plain text
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Users table (students / participants)
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    regno VARCHAR(50) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Quizzes table (created by admins) - UPDATED with token system
+CREATE TABLE quizzes (
+    quiz_id SERIAL PRIMARY KEY,
+    admin_id INT NOT NULL REFERENCES admins(admin_id) ON DELETE CASCADE,
+    quiz_name TEXT NOT NULL,
+    description TEXT,
+    total_mark INT NOT NULL CHECK (total_mark >= 0),
+    quiz_token VARCHAR(5) UNIQUE NOT NULL, -- 5-digit unique token for quiz access
+    is_active BOOLEAN DEFAULT TRUE, -- admin can activate/deactivate quiz
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Questions table (belongs to quizzes)
+CREATE TABLE questions (
+    question_id SERIAL PRIMARY KEY,
+    quiz_id INT NOT NULL REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
+    question_text TEXT NOT NULL,
+    points INT NOT NULL DEFAULT 1 CHECK (points > 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Options table (answers for questions)
+CREATE TABLE options (
+    option_id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
+    option_text TEXT NOT NULL,
+    is_correct BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- 6. User answers table (records each chosen answer)
+CREATE TABLE user_answers (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    quiz_id INT NOT NULL REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
+    question_id INT NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
+    option_id INT NOT NULL REFERENCES options(option_id),
+    answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(user_id, quiz_id, question_id)
+);
+
+-- 7. User results table (final score after quiz submission)
+CREATE TABLE user_results (
+    result_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    quiz_id INT NOT NULL REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
+    score INT NOT NULL CHECK (score >= 0),
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, quiz_id) -- one result per quiz per user
+);
+
+-- 8. Helpful indexes (speed up queries)
+CREATE INDEX idx_questions_quiz_id ON questions(quiz_id);
+CREATE INDEX idx_options_question_id ON options(question_id);
+CREATE INDEX idx_answers_user_id ON user_answers(user_id);
+CREATE INDEX idx_results_user_id ON user_results(user_id);
+CREATE INDEX idx_quiz_token ON quizzes(quiz_token);
